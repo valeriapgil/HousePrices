@@ -64,6 +64,39 @@ class NeuralNet:
     for lay in range(self.L):
       self.d_theta_prev.append(np.zeros(layers[lay]))
 
+    self.training_error = []
+    self.validation_error = []
+
+  def fit(self, X: np.ndarray, y: np.ndarray):
+    n_samples = X.shape[0]
+    n_val = int(n_samples * self.validation_split)
+    X_train, X_val = X[:-n_val], X[-n_val:]
+    y_train, y_val = y[:-n_val], y[-n_val:]
+
+    for epoch in range(self.epochs):
+      for i in range(X_train.shape[0]):
+        self.feed_foward(X_train[i])
+        self.back_propagation_errors(y_train[i])
+        self.update_weights_and_thresholds()
+      
+      train_error = self.mean_squared_error(X_train, y_train)
+      val_error = self.mean_squared_error(X_val, y_val)
+      self.training_error.append(train_error)
+      self.validation_error.append(val_error)
+
+      if epoch % 100 == 0:
+        print(f"Epoch {epoch}/{self.epochs} - Training Error: {train_error:.6f} - Validation Error: {val_error:.6f}")
+
+  def predict(self, x: np.ndarray):
+    predictions = []
+    for i in range(x.shape[0]):
+      self.feed_foward(x[i]) #Feed forward for each input sample
+      predictions.append(self.xi[-1]) #Output layer activations
+    return np.array(predictions)
+  
+  def loss_epochs(self):
+    return np.array(self.training_error), np.array(self.validation_error)
+
   def feed_foward(self, x: np.ndarray):
     self.xi[0] = x
     for lay in range(1, self.L):
@@ -84,6 +117,15 @@ class NeuralNet:
       self.d_theta[lay] = self.learning_rate * self.delta[lay] + self.momentum * self.d_theta_prev[lay]
       self.d_theta_prev[lay] = self.d_theta[lay]
       self.theta[lay] += self.d_theta[lay]
+  
+  def mean_squared_error(self, X: np.ndarray, y: np.ndarray):
+
+    error = 0.0
+    for i in range(X.shape[0]): #X.shape[0] = number of samples, returns the first dimension of the array which is the number of rows
+      self.feed_foward(X[i])
+      error += np.sum((self.xi[-1] - y[i]) ** 2)
+      total_error = error / X.shape[0]
+    return total_error
 
   def sigmoid(self, x):
     return 1 / (1 + np.exp(-x))
