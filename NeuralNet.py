@@ -1,7 +1,7 @@
 import numpy as np
 
 class NeuralNet:
-  def __init__(self, layers, epochs=1000, learning_rate=0.01, momentum=0.9, function='sigmoid', validation_split=0.2):
+  def __init__(self, layers, epochs=100, learning_rate=0.001, momentum=0.9, function='sigmoid', validation_split=0.2):
     self.L = len(layers) #Number of layers
     self.n = layers.copy() #Array with number of units(neurons) in each layer including the input and the output layers
     self.epochs = epochs
@@ -20,6 +20,7 @@ class NeuralNet:
       "relu": lambda x: np.where(x > 0, 1, 0),
       "linear": lambda x: np.ones_like(x),
       "tanh": lambda x: 1 - np.tanh(x) ** 2
+      
     }
 
     self.fact_der = self.derivative_functions.get(self.function, lambda x: self.sigmoid(x) * (1 - self.sigmoid(x)))
@@ -131,15 +132,15 @@ class NeuralNet:
     return 1 / (1 + np.exp(-x))
 
 
-layers = [4, 9, 5, 1]
-nn = NeuralNet(layers)
+# layers = [4, 9, 5, 1]
+# nn = NeuralNet(layers)
 
-print("L = ", nn.L, end="\n")
-print("n = ", nn.n, end="\n")
+# print("L = ", nn.L, end="\n")
+# print("n = ", nn.n, end="\n")
 
-print("xi = ", nn.xi, end="\n")
-print("xi[0] = ", nn.xi[0], end="\n")
-print("xi[1] = ", nn.xi[0], end="\n")
+# print("xi = ", nn.xi, end="\n")
+# print("xi[0] = ", nn.xi[0], end="\n")
+# print("xi[1] = ", nn.xi[0], end="\n")
 
-print("wh = ", nn.w, end="\n")
-print("wh[1] = ", nn.w[1], end="\n")
+# print("wh = ", nn.w, end="\n")
+# print("wh[1] = ", nn.w[1], end="\n")
