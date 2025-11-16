@@ -20,7 +20,7 @@ class NeuralNet:
       "relu": lambda x: np.where(x > 0, 1, 0),
       "linear": lambda x: np.ones_like(x),
       "tanh": lambda x: 1 - np.tanh(x) ** 2
-      
+
     }
 
     self.fact_der = self.derivative_functions.get(self.function, lambda x: self.sigmoid(x) * (1 - self.sigmoid(x)))
@@ -78,7 +78,7 @@ class NeuralNet:
       for i in range(X_train.shape[0]):
         self.feed_foward(X_train[i])
         self.back_propagation_errors(y_train[i])
-        self.update_weights_and_thresholds()
+        self.update_weights_and_thresholds() #Parece que no me está actualizando bien los pesos
       
       train_error = self.mean_squared_error(X_train, y_train)
       val_error = self.mean_squared_error(X_val, y_val)
