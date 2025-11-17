@@ -1,7 +1,7 @@
 import numpy as np
 
 class NeuralNet:
-  def __init__(self, layers, epochs=100, learning_rate=0.001, momentum=0.9, function='sigmoid', validation_split=0.2):
+  def __init__(self, layers, epochs=1000, learning_rate=0.001, momentum=0.9, function='relu', validation_split=0.2):
     self.L = len(layers) #Number of layers
     self.n = layers.copy() #Array with number of units(neurons) in each layer including the input and the output layers
     self.epochs = epochs
@@ -34,14 +34,14 @@ class NeuralNet:
     for lay in range(self.L):
       self.xi.append(np.zeros(layers[lay])) 
 
-    self.w = [] #Array of matrices for the weights
+    self.w = []
     self.w.append(np.zeros((1, 1)))
     for lay in range(1, self.L):
-      self.w.append(np.zeros((layers[lay], layers[lay - 1])))
+        self.w.append(np.random.randn(layers[lay], layers[lay - 1]) * np.sqrt(2. / layers[lay - 1]))
 
     self.theta = [] #Array of arrays for the thresholds
     for lay in range(self.L):
-      self.theta.append(np.zeros(layers[lay]))
+      self.theta.append(np.random.randn(layers[lay]) * np.sqrt(2. / layers[lay]))
     
     self.delta = [] #Array of arrays for the propagation errors
     for lay in range(self.L):
@@ -75,10 +75,13 @@ class NeuralNet:
     y_train, y_val = y[:-n_val], y[-n_val:]
 
     for epoch in range(self.epochs):
-      for i in range(X_train.shape[0]):
-        self.feed_foward(X_train[i])
-        self.back_propagation_errors(y_train[i])
-        self.update_weights_and_thresholds() #Parece que no me está actualizando bien los pesos
+      indices_aleatorios = np.random.permutation(X_train.shape[0])
+      for i in indices_aleatorios:
+        x_patron = X_train[i]
+        y_patron = y_train[i]
+        self.feed_foward(x_patron)
+        self.back_propagation_errors(y_patron)
+        self.update_weights_and_thresholds()
       
       train_error = self.mean_squared_error(X_train, y_train)
       val_error = self.mean_squared_error(X_val, y_val)
@@ -105,8 +108,8 @@ class NeuralNet:
       self.xi[lay] = self.fact(self.h[lay])
 
   def back_propagation_errors(self, y: np.ndarray):
-    self.delta[-1] = self.fact_der(self.h[-1]) * (self.xi[-1] - y) #L-1?
-    for lay in range(self.L - 2, 0, -1): #L-2?
+    self.delta[-1] = self.fact_der(self.h[-1]) * (self.xi[-1] - y)
+    for lay in range(self.L - 2, 0, -1):
       self.delta[lay] = self.fact_der(self.h[lay]) * np.dot(self.w[lay + 1].T, self.delta[lay + 1])
 
   def update_weights_and_thresholds(self):
@@ -120,12 +123,11 @@ class NeuralNet:
       self.theta[lay] += self.d_theta[lay]
   
   def mean_squared_error(self, X: np.ndarray, y: np.ndarray):
-
     error = 0.0
     for i in range(X.shape[0]): #X.shape[0] = number of samples, returns the first dimension of the array which is the number of rows
       self.feed_foward(X[i])
       error += np.sum((self.xi[-1] - y[i]) ** 2)
-      total_error = error / X.shape[0]
+    total_error = error / X.shape[0]
     return total_error
 
   def sigmoid(self, x):
