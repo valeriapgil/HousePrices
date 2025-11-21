@@ -8,6 +8,7 @@ class NeuralNet:
     self.learning_rate = learning_rate
     self.momentum = momentum
     self.function = function
+    
     self.activation_functions = {
       "sigmoid": self.sigmoid,
       "relu": lambda x: np.maximum(0, x),
@@ -15,27 +16,27 @@ class NeuralNet:
       "tanh": lambda x: np.tanh(x)
     }
     self.fact = self.activation_functions.get(self.function, self.sigmoid)
+
     self.derivative_functions = {
       "sigmoid": lambda x: self.sigmoid(x) * (1 - self.sigmoid(x)),
       "relu": lambda x: np.where(x > 0, 1, 0),
       "linear": lambda x: np.ones_like(x),
       "tanh": lambda x: 1 - np.tanh(x) ** 2
-
     }
-
     self.fact_der = self.derivative_functions.get(self.function, lambda x: self.sigmoid(x) * (1 - self.sigmoid(x)))
+
     self.validation_split = validation_split
   
     self.h = [] #Array of arrays for the fields
     for lay in range(self.L):
-      self.h.append(np.zeros(layers[lay])) #*******
+      self.h.append(np.zeros(layers[lay]))
       
     self.xi = [] #Array of arrays for the activations
     for lay in range(self.L):
       self.xi.append(np.zeros(layers[lay])) 
 
     self.w = []
-    self.w.append(np.zeros((1, 1)))
+    self.w.append(np.zeros((1, 1)))#Placeholder for the weights of the input layer
     for lay in range(1, self.L):
         self.w.append(np.random.randn(layers[lay], layers[lay - 1]) * np.sqrt(2. / layers[lay - 1]))
 
@@ -121,12 +122,13 @@ class NeuralNet:
       self.d_theta[lay] = self.learning_rate * self.delta[lay] + self.momentum * self.d_theta_prev[lay]
       self.d_theta_prev[lay] = self.d_theta[lay]
       self.theta[lay] += self.d_theta[lay]
-  
+
   def mean_squared_error(self, X: np.ndarray, y: np.ndarray):
     error = 0.0
-    for i in range(X.shape[0]): #X.shape[0] = number of samples, returns the first dimension of the array which is the number of rows
-      self.feed_foward(X[i])
-      error += np.sum((self.xi[-1] - y[i]) ** 2)
+    for i in range(X.shape[0]):
+      self.feed_foward(X[i]) # Actualiza self.xi[-1]
+      y_pred = self.xi[-1]   # Obtiene la salida predicha
+      error += np.sum((y_pred - y[i]) ** 2)
     total_error = error / X.shape[0]
     return total_error
 
