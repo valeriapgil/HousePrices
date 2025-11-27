@@ -35,15 +35,21 @@ class NeuralNet:
     for lay in range(self.L):
       self.xi.append(np.zeros(layers[lay])) 
 
-    self.w = []
-    self.w.append(np.zeros((1, 1)))#Placeholder for the weights of the input layer
-    for lay in range(1, self.L):
-        self.w.append(np.random.randn(layers[lay], layers[lay - 1]) * np.sqrt(2. / layers[lay - 1]))
+    # self.w = []
+    # self.w.append(np.zeros((1, 1)))#Placeholder for the weights of the input layer
+    # for lay in range(1, self.L):
+    #     self.w.append(np.random.randn(layers[lay], layers[lay - 1]) * np.sqrt(2. / layers[lay - 1]))
 
     self.theta = [] #Array of arrays for the thresholds
     for lay in range(self.L):
       self.theta.append(np.random.randn(layers[lay]) * np.sqrt(2. / layers[lay]))
-    
+
+    # He initialization (correct for ReLU)
+    self.w = [None] + [
+        np.random.randn(layers[lay], layers[lay - 1]) * np.sqrt(2. / layers[lay - 1])
+        for lay in range(1, self.L)
+    ] #an array of matrices for the weights
+  
     self.delta = [] #Array of arrays for the propagation errors
     for lay in range(self.L):
       self.delta.append(np.zeros(layers[lay]))
@@ -72,14 +78,26 @@ class NeuralNet:
   def fit(self, X: np.ndarray, y: np.ndarray):
     n_samples = X.shape[0]
     n_val = int(n_samples * self.validation_split)
-    X_train, X_val = X[:-n_val], X[-n_val:]
-    y_train, y_val = y[:-n_val], y[-n_val:]
+    # X_train, X_val = X[:-n_val], X[-n_val:]
+    # y_train, y_val = y[:-n_val], y[-n_val:]
 
+    # for epoch in range(self.epochs):
+    #   indices_aleatorios = np.random.permutation(X_train.shape[0])
+    #   for i in indices_aleatorios:
+    #     x_patron = X_train[i]
+    #     y_patron = y_train[i]
+    indices = np.random.permutation(n_samples)
+    val_idx = indices[:n_val]
+    train_idx = indices[n_val:]
+
+    X_train, X_val = X[train_idx], X[val_idx]
+    y_train, y_val = y[train_idx], y[val_idx]
+            
     for epoch in range(self.epochs):
-      indices_aleatorios = np.random.permutation(X_train.shape[0])
-      for i in indices_aleatorios:
-        x_patron = X_train[i]
-        y_patron = y_train[i]
+        # loop through all patterns in random order
+      for i in np.random.permutation(X_train.shape[0]):
+        x_patron = X_train[i].reshape(-1)
+        y_patron = y_train[i].reshape(-1)
         self.feed_foward(x_patron)
         self.back_propagation_errors(y_patron)
         self.update_weights_and_thresholds()
